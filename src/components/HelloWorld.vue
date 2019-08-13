@@ -2,20 +2,20 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-08-12 22:30:09
- * @LastEditTime: 2019-08-13 22:08:38
+ * @LastEditTime: 2019-08-13 23:16:08
  * @LastEditors: Please set LastEditors
  -->
 
 <template>
   <div >
-    <h2><button v-on:click="ShufflePuke">New Game </button>  
-    <button v-on:click="CheatUncover">Cover/Uncover {{puke_sorted.length}}</button> 
+    <h2><button v-on:click="ShufflePoker">New Game </button>  
+    <button v-on:click="CheatUncover">Cover/Uncover {{poker_sorted.length}}</button> 
     {{ msg }} 
   
-    <button v-on:click="NewRound" v-if="!puke_empty && Round.Round_finish">New Round</button>
+    <button v-on:click="NewRound" v-if="!poker_empty && Round.Round_finish">New Round</button>
     </h2>
     <ul v-if="!start_game">
-      <li v-for ="item in puke_sorted" :key="item">
+      <li v-for ="item in poker_sorted" :key="item">
           <img :src= "'../static/img/' + item + '.jpg'">
       </li>
     </ul>
@@ -85,8 +85,8 @@ export default {
   name: 'HelloWorld',
   data () {
     return {
-      msg: "Welcome to Andy and Wing's Puke App！  ",
-      puke_sorted : [],
+      msg: "Welcome to Andy and Wing's Poker App！  ",
+      poker_sorted : [],
       start_game: false, 
       game_finished : false, 
       Player_A : [],
@@ -130,14 +130,14 @@ export default {
       if(aScore < bScore) return 'Andy';
       if(aScore == bScore) return 'Wing and Andy';
     }, 
-    puke_empty : function(){
-      return !this.puke_sorted.length; 
+    poker_empty : function(){
+      return !this.poker_sorted.length; 
     },     
   },
 
   methods: {
     
-    ShufflePuke: function() {
+    ShufflePoker: function() {
       function RandomShuffle(arr, newArr) {
       if (arr.length == 1) {
           newArr.push(arr[0]);
@@ -151,8 +151,8 @@ export default {
 
     this.start_game  = false;
     this.game_finished = false;
-    this.puke_sorted =  [...puke_original];
-    this.puke_sorted = RandomShuffle(this.puke_sorted, []);
+    this.poker_sorted =  [...poker_original];
+    this.poker_sorted = RandomShuffle(this.poker_sorted, []);
 
     this.start_game =  true;
     this.Player_A = [];
@@ -161,8 +161,8 @@ export default {
     this.Player_B_Score = [];
 
     for(let i = 0; i< 5; i++){
-      this.Player_A.push(this.puke_sorted.shift(0));
-      this.Player_B.push(this.puke_sorted.shift(0));
+      this.Player_A.push(this.poker_sorted.shift(0));
+      this.Player_B.push(this.poker_sorted.shift(0));
     }
     //this.Player_A = ['A_♠', 'A_♥', 'A_♣', 'A_♦', 'QUEEN'];
     //this.Player_B = ['K_♥', 'K_♣', 'K_♦', 'KING', '2_♠'];    
@@ -205,13 +205,13 @@ export default {
       // Automatic play 
       if(this.Round.Round_first){
         this.Round.Round_first = false;
-        this.Round.Round_A = findPuke_First(this.Player_A, selected);
+        this.Round.Round_A = findPoker_First(this.Player_A, selected);
         this.Round.Round_Role = 'B';
 
         Collect_Score(this.Round.Round_Score, this.Round.Round_A);
         this.Round.Round_Pool = this.Round.Round_Pool.concat(this.Round.Round_A);
       }else{
-        this.Round.Round_A = findPuke_Second(this.Player_A, this.Round.Round_B, this.Round.Round_Score, this.puke_empty, selected);
+        this.Round.Round_A = findPoker_Second(this.Player_A, this.Round.Round_B, this.Round.Round_Score, this.poker_empty, selected);
         if(this.Round.Round_A.length >0 ){
             this.Round.Round_Role = 'B';
             Collect_Score(this.Round.Round_Score, this.Round.Round_A);
@@ -222,14 +222,14 @@ export default {
             this.Player_B_Score = this.Player_B_Score.concat(this.Round.Round_Score); 
             this.Round.Round_Role = 'B';
 
-            if(this.puke_empty && this.Player_B.length){
+            if(this.poker_empty && this.Player_B.length){
                 this.$options.methods.initRound(this);             
             }
         } 
       }
 
-      //console.log('A', this.puke_empty, this.Player_A.length, !this.Player_A.length)
-      if(this.puke_empty && !this.Player_A.length){
+      //console.log('A', this.poker_empty, this.Player_A.length, !this.Player_A.length)
+      if(this.poker_empty && !this.Player_A.length){
         this.game_finished = true;
         this.Round.Round_Score = [];
         Collect_Score(this.Round.Round_Score, this.Player_B);
@@ -264,13 +264,13 @@ export default {
       // Automatic play 
      if(this.Round.Round_first){
         this.Round.Round_first = false;
-        this.Round.Round_B = findPuke_First(this.Player_B, selected);
+        this.Round.Round_B = findPoker_First(this.Player_B, selected);
         this.Round.Round_Role = 'A';
 
         Collect_Score(this.Round.Round_Score, this.Round.Round_B);
         this.Round.Round_Pool = this.Round.Round_Pool.concat(this.Round.Round_B);
       }else{
-        this.Round.Round_B = findPuke_Second(this.Player_B, this.Round.Round_A, this.Round.Round_Score, this.puke_empty, selected);
+        this.Round.Round_B = findPoker_Second(this.Player_B, this.Round.Round_A, this.Round.Round_Score, this.poker_empty, selected);
         if(this.Round.Round_B.length >0 ){
             this.Round.Round_Role = 'A';
             Collect_Score(this.Round.Round_Score, this.Round.Round_B);
@@ -281,12 +281,12 @@ export default {
             this.Player_A_Score = this.Player_A_Score.concat(this.Round.Round_Score); 
             this.Round.Round_Role = 'A';
 
-            if(this.puke_empty && this.Player_A.length) {
+            if(this.poker_empty && this.Player_A.length) {
                 this.$options.methods.initRound(this);            
             }
         }               
       }
-      if(this.puke_empty && !this.Player_B.length){
+      if(this.poker_empty && !this.Player_B.length){
           this.game_finished = true;
           this.Round.Round_Score = [];
           Collect_Score(this.Round.Round_Score, this.Player_A);
@@ -300,22 +300,22 @@ export default {
     }, 
 
     NewRound : function(){
-      if (!this.puke_sorted.length) return; 
+      if (!this.poker_sorted.length) return; 
 
       if(this.Round.Round_Winner == 'A'){
-          while(this.puke_sorted.length > 0 && this.Player_A.length < 5){
-            this.Player_A.push(this.puke_sorted.shift(0));
+          while(this.poker_sorted.length > 0 && this.Player_A.length < 5){
+            this.Player_A.push(this.poker_sorted.shift(0));
           }
-          while(this.puke_sorted.length > 0 && this.Player_B.length < 5){
-            this.Player_B.push(this.puke_sorted.shift(0));
+          while(this.poker_sorted.length > 0 && this.Player_B.length < 5){
+            this.Player_B.push(this.poker_sorted.shift(0));
           }  
       }
       if(this.Round.Round_Winner == 'B'){
-          while(this.puke_sorted.length > 0 && this.Player_B.length < 5){
-            this.Player_B.push(this.puke_sorted.shift(0));
+          while(this.poker_sorted.length > 0 && this.Player_B.length < 5){
+            this.Player_B.push(this.poker_sorted.shift(0));
           }   
-          while(this.puke_sorted.length > 0 && this.Player_A.length < 5){
-            this.Player_A.push(this.puke_sorted.shift(0));
+          while(this.poker_sorted.length > 0 && this.Player_A.length < 5){
+            this.Player_A.push(this.poker_sorted.shift(0));
           }            
       }
 
@@ -337,13 +337,13 @@ export default {
   }
 }
 
-const puke_original = ['A_♠', 'A_♥', 'A_♣', 'A_♦', '2_♠', '2_♥', '2_♣', '2_♦', '3_♠', '3_♥', '3_♣', '3_♦',
+const poker_original = ['A_♠', 'A_♥', 'A_♣', 'A_♦', '2_♠', '2_♥', '2_♣', '2_♦', '3_♠', '3_♥', '3_♣', '3_♦',
 '4_♠', '4_♥', '4_♣', '4_♦', '5_♠', '5_♥', '5_♣', '5_♦', '6_♠', '6_♥', '6_♣', '6_♦',
 '7_♠', '7_♥', '7_♣', '7_♦', '8_♠', '8_♥', '8_♣', '8_♦', '9_♠', '9_♥', '9_♣', '9_♦',
 '10_♠', '10_♥', '10_♣', '10_♦', 'J_♠', 'J_♥', 'J_♣', 'J_♦', 'Q_♠', 'Q_♥', 'Q_♣', 'Q_♦',
 'K_♠', 'K_♥', 'K_♣', 'K_♦', 'KING', 'QUEEN'];
 
-const puke_Weight = {'A_♠': 20, 'A_♥'  : 20, 'A_♣'  : 20, 'A_♦': 20, 
+const poker_Weight = {'A_♠': 20, 'A_♥'  : 20, 'A_♣'  : 20, 'A_♦': 20, 
 '2_♠' : 40, '2_♥' : 40, '2_♣' : 40, '2_♦': 40,
 '3_♠' : 30, '3_♥' : 30, '3_♣' : 30, '3_♦': 30,
 '4_♠' : 4, '4_♥'  : 4, '4_♣'  : 4, '4_♦' : 4,
@@ -358,7 +358,7 @@ const puke_Weight = {'A_♠': 20, 'A_♥'  : 20, 'A_♣'  : 20, 'A_♦': 20,
 'K_♠' : 13, 'K_♥' : 13, 'K_♣'  : 13, 'K_♦' : 13,
 'KING' : 200.1, 'QUEEN'  : 200};
 
-const puke_Score =  {'A_♠': 0, 'A_♥'  : 0, 'A_♣'  : 0, 'A_♦': 0, 
+const poker_Score =  {'A_♠': 0, 'A_♥'  : 0, 'A_♣'  : 0, 'A_♦': 0, 
 '2_♠' : 0, '2_♥' : 0, '2_♣' : 0, '2_♦': 0,
 '3_♠' : 0, '3_♥' : 0, '3_♣' : 0, '3_♦': 0,
 '4_♠' : 0, '4_♥'  : 0, '4_♣'  : 0, '4_♦' : 0,
@@ -373,19 +373,19 @@ const puke_Score =  {'A_♠': 0, 'A_♥'  : 0, 'A_♣'  : 0, 'A_♦': 0,
 'K_♠' : 10, 'K_♥' : 10, 'K_♣'  : 10, 'K_♦' : 10,
 'KING'    : 0, 'QUEEN'  : 0};
 
-function findPuke_First(arr, selected) {
+function findPoker_First(arr, selected) {
   if(arr.length == 0) return [];
 	let pMin = arr[0];
-  let pMinNum = findPuke_Times(arr, pMin);	
+  let pMinNum = findPoker_Times(arr, pMin);	
   
   if(!selected.check_err && selected.selected_count > 0){
       pMin = selected.selected_value;
       pMinNum = selected.selected_count;
   }else{
     for (let i = 1; i <arr.length; i++){
-      if(puke_Weight[pMin] * findPuke_Times(arr, arr[i])  > puke_Weight[arr[i]] * pMinNum){
+      if(poker_Weight[pMin] * findPoker_Times(arr, arr[i])  > poker_Weight[arr[i]] * pMinNum){
         pMin = arr[i];
-        pMinNum = findPuke_Times(arr, arr[i]);	
+        pMinNum = findPoker_Times(arr, arr[i]);	
       }
     }
   }
@@ -393,7 +393,7 @@ function findPuke_First(arr, selected) {
   let outArr = [];
   let i = 0;
 	while (i < arr.length){
-    if(Math.abs(puke_Weight[pMin] - puke_Weight[arr[i]]) < 0.9 ) {
+    if(Math.abs(poker_Weight[pMin] - poker_Weight[arr[i]]) < 0.9 ) {
       outArr.push(arr[i]);
       arr.splice(i, 1);
       if (outArr.length >= pMinNum) break;
@@ -405,20 +405,20 @@ function findPuke_First(arr, selected) {
   return outArr;
 }
 
-function findPuke_Times(arr, poke) {
+function findPoker_Times(arr, poke) {
 	let pMinNum = 0;	
 
 	for (let i = 0; i <arr.length; i++){
-    if(Math.abs(puke_Weight[poke] - puke_Weight[arr[i]]) < 0.9){
+    if(Math.abs(poker_Weight[poke] - poker_Weight[arr[i]]) < 0.9){
       pMinNum ++;	
     }
   }    
   return pMinNum;
 }
 
-function findPuke_Second(arr, arrA, arrScore, empty, selected) {
+function findPoker_Second(arr, arrA, arrScore, empty, selected) {
   if(arr.length == 0) return [];
-  if(arrA.length == 0) return findPuke_First(arr); 
+  if(arrA.length == 0) return findPoker_First(arr); 
 	
 	let pMin_A = arrA[0];
 	let pMinNum_A = arrA.length;	
@@ -431,15 +431,15 @@ function findPuke_Second(arr, arrA, arrScore, empty, selected) {
     pMin = selected.selected_value;
     pMinNum = selected.selected_count;
 
-    if(pMinNum >= pMinNum_A && puke_Weight[pMin] > puke_Weight[pMin_A]){
+    if(pMinNum >= pMinNum_A && poker_Weight[pMin] > poker_Weight[pMin_A]){
       manualSel = true;
     }else{
       return [];
     }
   }else{
     for (let i = 0; i <arr.length; i++){
-          if(puke_Weight[pMin_A] < puke_Weight[arr[i]] ){
-              let tmp_num = findPuke_Times(arr, arr[i]);
+          if(poker_Weight[pMin_A] < poker_Weight[arr[i]] ){
+              let tmp_num = findPoker_Times(arr, arr[i]);
               if(pMinNum_A <= tmp_num){
                   if(pMin.length == 0){
                       pMin = arr[i];
@@ -451,7 +451,7 @@ function findPuke_Second(arr, arrA, arrScore, empty, selected) {
                           pMinNum = tmp_num;                        
                       }
                       else {
-                          if((puke_Weight[pMin] > puke_Weight[arr[i]]) && (pMinNum == tmp_num))
+                          if((poker_Weight[pMin] > poker_Weight[arr[i]]) && (pMinNum == tmp_num))
                           {
                               pMin = arr[i];
                               pMinNum = tmp_num;
@@ -468,8 +468,8 @@ function findPuke_Second(arr, arrA, arrScore, empty, selected) {
         let i = 0;
         let count = 0;
         while (i < arr.length){
-            if(Math.abs(puke_Weight[pMin] - puke_Weight[arr[i]]) < 0.9) {
-              if(arrScore.length == 0 && (puke_Weight[arr[i]] > 50) && !empty && !manualSel){
+            if(Math.abs(poker_Weight[pMin] - poker_Weight[arr[i]]) < 0.9) {
+              if(arrScore.length == 0 && (poker_Weight[arr[i]] > 50) && !empty && !manualSel){
                   ;
               }else{
                 outArr.push(arr[i]);
@@ -490,7 +490,7 @@ function Collect_Score(arr, arr_round) {
     if(arr_round.length == 0) return;
 
     for (let i = 0; i <arr_round.length; i++){
-        if(puke_Score[arr_round[i]]){
+        if(poker_Score[arr_round[i]]){
             arr.push(arr_round[i]);
         }
     }
@@ -501,7 +501,7 @@ function Calculate_Score(arr) {
     let score = 0;
 
     for (var i = 0; i <arr.length; i++){
-        score += puke_Score[arr[i]];
+        score += poker_Score[arr[i]];
     }
     return score;
 }
@@ -518,7 +518,7 @@ function SelectedCheck(arr, arrselect, arrA){
         selected_count = 1;
         continue;
       }
-      if(Math.abs(puke_Weight[selected_value] - puke_Weight[arr[i]]) > 0.9){
+      if(Math.abs(poker_Weight[selected_value] - poker_Weight[arr[i]]) > 0.9){
         check_err = true;
         break;
       }
@@ -529,7 +529,7 @@ function SelectedCheck(arr, arrselect, arrA){
   if(!check_err && arrA.length>=0){
     let pMin_A = arrA[0];
     let pMinNum_A = arrA.length;
-    check_err = selected_count < pMinNum_A || puke_Weight[selected_value] <= puke_Weight[pMin_A];
+    check_err = selected_count < pMinNum_A || poker_Weight[selected_value] <= poker_Weight[pMin_A];
   }
 
   return {'selected_value':selected_value, 'selected_count':selected_count, 'check_err':check_err};
