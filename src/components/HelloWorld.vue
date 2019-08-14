@@ -2,25 +2,40 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-08-12 22:30:09
- * @LastEditTime: 2019-08-14 09:36:28
+ * @LastEditTime: 2019-08-14 10:47:11
  * @LastEditors: Please set LastEditors
  -->
 
 <template>
   <div >
     <h2><button v-on:click="ShufflePoker">New Game </button>  
-    <button v-on:click="CheatUncover">Cover/Uncover {{poker_sorted.length}}</button> 
+    <button v-on:click="show_remain = !show_remain; show_used = false;"> Remain {{poker_remain.length}} Poker</button> 
+    <button v-on:click="show_used = !show_used; show_remain = false;"> Used {{poker_used.length}} Poker</button> 
+    <button v-on:click="game_Pause = false; show_used = false; show_remain = false;"> Start </button> 
     {{ msg }} 
   
     <button v-on:click="NewRound" v-if="!poker_empty && Round.Round_finish">New Round</button>
     </h2>
-    <ul v-if="!start_game">
-      <li v-for ="item in poker_sorted" :key="item">
+    <ul v-if="show_remain">
+      <li v-for ="item in poker_remain" :key="item">
           <img :src= "'../static/img/' + item + '.jpg'">
       </li>
     </ul>
+  <!--
+    <ul v-if="show_used">
+      <li v-for ="item in poker_used" :key="item">
+          <img :src= "'../static/img/' + item + '.jpg'">
+      </li>
+    </ul> -->
+    <div v-if="show_used">
+      <ul v-for ="(round, i) in poker_usedRound" :key="i">
+        <li v-for ="item in round" :key="item">
+            <img :src= "'../static/img/' + item + '.jpg'">
+        </li>
+      </ul>
+    </div>
 
-    <div v-if="start_game && !game_finished">
+    <div v-if="!show_remain && !show_used && !game_finished && !game_Pause">
       <h4> <span v-if="Round.Round_Role=='A'" class="span_Arrow"> >> </span>
         Visible? <input type="checkbox" v-model="Player_A_Visible"> , Robot Wing, Score now is .. <span>{{Player_A_ScoreSum}}</span> .. , 
         <button v-on:click="Round.Round_A_Giveup=true;A_Play();" v-if="!Round.Round_finish  &&  Round.Round_Role=='A' && !Round.Round_first">Give Up</button> 
@@ -54,10 +69,11 @@
             <img :src= "'../static/img/' + item + '.jpg'">
             <p>{{i+1}}</p>
         </li>
-      </ul>            
+      </ul>     
+
     </div>
     
-    <div v-if="game_finished">
+    <div v-if="!show_remain && !show_used && game_finished && !game_Pause">
       <h2> This 7k523 Game, Winner is:  Player <span>{{ Game_Winner }}</span> </h2>
       <h4> Robot Wing, Score Totle is .. <span>{{Player_A_ScoreSum}}</span> .. </h4>      
       <ul>
@@ -86,8 +102,12 @@ export default {
   data () {
     return {
       msg: "Welcome to Andy and Wing's Poker App！  ",
-      poker_sorted : [],
-      start_game: false, 
+      poker_remain : [],
+      poker_used : [],
+      poker_usedRound : [],
+      show_remain: false, 
+      show_used : false, 
+      game_Pause : true, 
       game_finished : false, 
       Player_A : [],
       Player_B : [], 
@@ -131,7 +151,7 @@ export default {
       if(aScore == bScore) return 'Wing and Andy';
     }, 
     poker_empty : function(){
-      return !this.poker_sorted.length; 
+      return !this.poker_remain.length; 
     },     
   },
 
@@ -149,24 +169,27 @@ export default {
       return RandomShuffle(arr, newArr);      
     }
 
-    this.start_game  = false;
+    this.game_Pause = true;
     this.game_finished = false;
-    this.poker_sorted =  [...poker_original];
-    this.poker_sorted = RandomShuffle(this.poker_sorted, []);
-
-    this.start_game =  true;
+    this.poker_remain =  [...poker_original];
+    this.poker_remain = RandomShuffle(this.poker_remain, []);
+    this.poker_used = []
+    this.poker_usedRound = []
+    this.show_remain =  false;
+    this.show_used = false;
+     
     this.Player_A = [];
     this.Player_B = [];
     this.Player_A_Score = [];
     this.Player_B_Score = [];
 
     for(let i = 0; i< 5; i++){
-      this.Player_A.push(this.poker_sorted.shift(0));
-      this.Player_B.push(this.poker_sorted.shift(0));
+      this.Player_A.push(this.poker_remain.shift(0));
+      this.Player_B.push(this.poker_remain.shift(0));
     }
     //this.Player_A = ['A_♠', 'A_♥', 'A_♣', 'A_♦', 'QUEEN'];
     //this.Player_B = ['K_♥', 'K_♣', 'K_♦', 'KING', '2_♠'];    
-    this.$options.methods.initRound(this);
+    this.$options.methods.initRound(this, true);
     }, 
 
     selectPoke : function(flag, i){
@@ -188,6 +211,7 @@ export default {
         this.Round.Round_finish = true;
         this.Player_B_Score = this.Player_B_Score.concat(this.Round.Round_Score); 
         this.Round.Round_Role = 'B';
+        
 
         if(this.poker_empty && this.Player_B.length) {
           this.$options.methods.initRound(this);            
@@ -236,9 +260,16 @@ export default {
       //console.log('A', this.poker_empty, this.Player_A.length, !this.Player_A.length)
       if(this.poker_empty && !this.Player_A.length){
         this.game_finished = true;
+        this.Player_A_Score = this.Player_A_Score.concat(this.Round.Round_Score); 
+                
         this.Round.Round_Score = [];
         Collect_Score(this.Round.Round_Score, this.Player_B);
         this.Player_A_Score = this.Player_A_Score.concat(this.Round.Round_Score); 
+
+        this.poker_used = this.poker_used.concat(this.Round.Round_Pool);
+        this.poker_used = this.poker_used.concat(this.Player_B);        
+        this.poker_usedRound.push([...this.Round.Round_Pool]); 
+        this.poker_usedRound.push([...this.Player_B]); 
         return ; 
       }  
     },
@@ -296,42 +327,51 @@ export default {
         }               
       }
       if(this.poker_empty && !this.Player_B.length){
-          this.game_finished = true;
-          this.Round.Round_Score = [];
+          this.game_finished = true;          
+          this.Player_B_Score = this.Player_B_Score.concat(this.Round.Round_Score); 
+
+          this.Round.Round_Score = [];          
           Collect_Score(this.Round.Round_Score, this.Player_A);
           this.Player_B_Score = this.Player_B_Score.concat(this.Round.Round_Score); 
+
+          this.poker_used = this.poker_used.concat(this.Round.Round_Pool);
+          this.poker_used = this.poker_used.concat(this.Player_A);
+          this.poker_usedRound.push([...this.Round.Round_Pool]); 
+          this.poker_usedRound.push([...this.Player_A]);           
           return ; 
       }             
     },
 
-    CheatUncover : function(){
-      this.start_game =  !  this.start_game;
-    }, 
-
     NewRound : function(){
-      if (!this.poker_sorted.length) return; 
+      if (!this.poker_remain.length) return; 
 
       if(this.Round.Round_Winner == 'A'){
-          while(this.poker_sorted.length > 0 && this.Player_A.length < 5){
-            this.Player_A.push(this.poker_sorted.shift(0));
+          while(this.poker_remain.length > 0 && this.Player_A.length < 5){
+            this.Player_A.push(this.poker_remain.shift(0));
           }
-          while(this.poker_sorted.length > 0 && this.Player_B.length < 5){
-            this.Player_B.push(this.poker_sorted.shift(0));
+          while(this.poker_remain.length > 0 && this.Player_B.length < 5){
+            this.Player_B.push(this.poker_remain.shift(0));
           }  
       }
       if(this.Round.Round_Winner == 'B'){
-          while(this.poker_sorted.length > 0 && this.Player_B.length < 5){
-            this.Player_B.push(this.poker_sorted.shift(0));
+          while(this.poker_remain.length > 0 && this.Player_B.length < 5){
+            this.Player_B.push(this.poker_remain.shift(0));
           }   
-          while(this.poker_sorted.length > 0 && this.Player_A.length < 5){
-            this.Player_A.push(this.poker_sorted.shift(0));
+          while(this.poker_remain.length > 0 && this.Player_A.length < 5){
+            this.Player_A.push(this.poker_remain.shift(0));
           }            
       }
 
       this.$options.methods.initRound(this);
     }, 
 
-    initRound : function(_this){      
+    initRound : function(_this, start){
+      //console.log(_this.Round.Round_Pool)
+      if(! start){
+        _this.poker_used = _this.poker_used.concat(_this.Round.Round_Pool);
+        _this.poker_usedRound.push([..._this.Round.Round_Pool]); 
+      }
+
       _this.Round.Round_first = true; 
       _this.Round.Round_finish = false;
       //_this.Round.Round_Role = 'A';               
