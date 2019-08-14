@@ -2,7 +2,7 @@
  * @Description: In User Settings Edit
  * @Author: your name
  * @Date: 2019-08-12 22:30:09
- * @LastEditTime: 2019-08-13 23:16:08
+ * @LastEditTime: 2019-08-14 09:36:28
  * @LastEditors: Please set LastEditors
  -->
 
@@ -23,7 +23,7 @@
     <div v-if="start_game && !game_finished">
       <h4> <span v-if="Round.Round_Role=='A'" class="span_Arrow"> >> </span>
         Visible? <input type="checkbox" v-model="Player_A_Visible"> , Robot Wing, Score now is .. <span>{{Player_A_ScoreSum}}</span> .. , 
-        <button v-on:click="Round.Round_A_Giveup=true;A_Play();" v-if="!Round.Round_finish  &&  Round.Round_Role=='A'">Give Up</button> 
+        <button v-on:click="Round.Round_A_Giveup=true;A_Play();" v-if="!Round.Round_finish  &&  Round.Round_Role=='A' && !Round.Round_first">Give Up</button> 
         <button v-on:click="A_Play" v-if="!Round.Round_finish  &&  Round.Round_Role=='A'">Play</button> 
         </h4>
       
@@ -36,7 +36,7 @@
       </ul>
       <h4> <span v-if="Round.Round_Role=='B'"  class="span_Arrow"> >> </span>
         Visible? <input type="checkbox" v-model="Player_B_Visible">, Robot Andy, Score now is .. <span>{{Player_B_ScoreSum}}</span> .. , 
-          <button v-on:click="Round.Round_B_Giveup=true;B_Play();" v-if="!Round.Round_finish &&  Round.Round_Role=='B'">Give Up</button> 
+          <button v-on:click="Round.Round_B_Giveup=true;B_Play();" v-if="!Round.Round_finish &&  Round.Round_Role=='B' && !Round.Round_first">Give Up</button> 
           <button v-on:click="B_Play" v-if="!Round.Round_finish &&  Round.Round_Role=='B'">Play</button> 
           </h4>
       <ul>
@@ -188,7 +188,12 @@ export default {
         this.Round.Round_finish = true;
         this.Player_B_Score = this.Player_B_Score.concat(this.Round.Round_Score); 
         this.Round.Round_Role = 'B';
-        this.Round.Round_A_Giveup = false;         
+
+        if(this.poker_empty && this.Player_B.length) {
+          this.$options.methods.initRound(this);            
+        }else{
+          this.Round.Round_A_Giveup = false; 
+        }           
         return ;        
       }
       
@@ -247,7 +252,11 @@ export default {
         this.Player_A_Score = this.Player_A_Score.concat(this.Round.Round_Score); 
         this.Round.Round_Role = 'A';
 
-        this.Round.Round_B_Giveup = false; 
+        if(this.poker_empty && this.Player_A.length) {
+          this.$options.methods.initRound(this);            
+        }else{
+          this.Round.Round_B_Giveup = false; 
+        }        
         return ;      
       }
 
@@ -342,6 +351,11 @@ const poker_original = ['A_♠', 'A_♥', 'A_♣', 'A_♦', '2_♠', '2_♥', '2
 '7_♠', '7_♥', '7_♣', '7_♦', '8_♠', '8_♥', '8_♣', '8_♦', '9_♠', '9_♥', '9_♣', '9_♦',
 '10_♠', '10_♥', '10_♣', '10_♦', 'J_♠', 'J_♥', 'J_♣', 'J_♦', 'Q_♠', 'Q_♥', 'Q_♣', 'Q_♦',
 'K_♠', 'K_♥', 'K_♣', 'K_♦', 'KING', 'QUEEN'];
+
+ /* for speed up test only
+const poker_original = ['A_♠', 'A_♥', 'A_♣', 'A_♦', '2_♠', '2_♥', '2_♣', '2_♦', '3_♠', '3_♥', '3_♣', '3_♦',
+'4_♠', '4_♥', '4_♣', '4_♦', '5_♠'];
+*/
 
 const poker_Weight = {'A_♠': 20, 'A_♥'  : 20, 'A_♣'  : 20, 'A_♦': 20, 
 '2_♠' : 40, '2_♥' : 40, '2_♣' : 40, '2_♦': 40,
